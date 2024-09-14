@@ -1,44 +1,90 @@
-//import { getCoffeeShopServiceHandler } from "@com.example/coffee-shop-server";
-
 import { getPantryServiceHandler } from "@com.example/coffee-shop-server";
 import { IncomingMessage, ServerResponse, createServer } from "http";
 import { convertRequest, writeResponse } from "@aws-smithy/server-node";
-//import { CoffeeShop } from "./CoffeeShop";
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 
 import { Pantry, PantryContext } from "./Pantry";
+import Constants from "./constants";
 
+function main() {
 
-// Instantiate our coffee service implementation
-//const coffeeService = new CoffeeShop();
-const pantryService = new Pantry();
+  const serviceHandler = getPantryServiceHandler(new Pantry());
 
-// Create a service handler using our coffee service
-// const serviceHandler = getCoffeeShopServiceHandler(coffeeService);
-const serviceHandler = getPantryServiceHandler(pantryService);
+  class PantryContextClass {
+    context: PantryContext;
+    constructor() {
+      this.context = { counts: new Map() };
+    }
+    replacer(key, value) {
+      if (value instanceof Map) {
+        return {
+          dataType: 'Map',
+          value: Array.from(value.entries()), // or with spread: value: [...value]
+        };
+      } else {
+        return value;
+      }
+    }
+    reviver(key, value) {
+      if (typeof value === 'object' && value !== null) {
+        if (value.dataType === 'Map') {
+          return new Map(value.value);
+        }
+      }
+      return value;
+    }
+    readStateFromDisk() {
+      if (existsSync(Constants.DATA_FILE_PATH)) {
+        try {
+          console.log("reading pantry.json.");
+          const pantryJsonStr: string = readFileSync(Constants.DATA_FILE_PATH).toString();
+          const pantryMap: Map<string, number> = JSON.parse(pantryJsonStr, this.reviver);
+          this.context.counts = pantryMap
+          console.log(ctx);
+        } catch (err) {
+          console.error("failed to read/parse pantryJson");
+        }
+      }
+    }
+    writeStateToDisk() {
+      const pantryJsonStr = JSON.stringify(this.context.counts, this.replacer);
+      try {
+        console.log(pantryJsonStr);
+        writeFileSync(Constants.DATA_FILE_PATH, pantryJsonStr);
+        console.log("pantry.json updated.")
+      } catch (err) {
+        console.error("failed to write to pantry.json");
+      }
+    }
+  }
 
-// The coffee shop context object
-// const ctx = { orders: new Map(), queue: [] };
-const ctx: PantryContext = { counts: new Map() };
+  const ctx: PantryContextClass = new PantryContextClass();
 
-// Create the node server with the service handler
-const server = createServer(async function (
-  req: IncomingMessage,
-  res: ServerResponse<IncomingMessage> & { req: IncomingMessage }
-) {
-  // Convert NodeJS's http request to an HttpRequest.
-  const httpRequest = convertRequest(req);
+  ctx.readStateFromDisk();
 
-  // Call the service handler, which will route the request to the GreetingService
-  // implementation and then serialize the response to an HttpResponse.
-  const httpResponse = await serviceHandler.handle(httpRequest, ctx);
+  setInterval(() => {
+    ctx.writeStateToDisk();
+  }, 7000);
 
-  // Write the HttpResponse to NodeJS http's response expected format.
-  return writeResponse(httpResponse, res);
-});
+  // Create the node server with the service handler
+  const server = createServer(async function (
+    req: IncomingMessage,
+    res: ServerResponse<IncomingMessage> & { req: IncomingMessage }
+  ) {
+    // Convert NodeJS's http request to an HttpRequest.
+    const httpRequest = convertRequest(req);
 
-const port = 3001
-server.listen(port);
-console.log(`Started server on port ${port}...`);
+    // Call the service handler, which will route the request to the GreetingService
+    // implementation and then serialize the response to an HttpResponse.
+    const httpResponse = await serviceHandler.handle(httpRequest, ctx.context);
 
-// Asynchronously handle orders as they come in
-// pantryService.handleOrders(ctx)
+    // Write the HttpResponse to NodeJS http's response expected format.
+    return writeResponse(httpResponse, res);
+  });
+
+  const port = 3001
+  server.listen(port);
+  console.log(`Started server on port ${port}...`);
+}
+
+main();

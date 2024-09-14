@@ -6,3 +6,5 @@ node_modules
 # Ignore generated code
 client/sdk
 server/ssdk
+smithy/build
+server/pantry.json
