@@ -45,7 +45,7 @@ build-app: build-client ## Build the web application
 	cd app; yarn && yarn build
 	@echo Finished building app.
 
-build: build-server build-client build-app ## Build the entire project
+build: build-server build-client ## Build the entire project
 
 dev-server: build-ssdk ## Run the server in development-mode
 	cd server; yarn && yarn dev
@@ -56,7 +56,7 @@ dev-app: build-client ## Run the web application in development-mode
 dev: # Run the server and web application in development-mode in the same session
 	$(MAKE) -j 2 dev-server dev-app
 
-run-server: build-server ## Run the server
+run-server: build ## Run the server
 	cd server; yarn start
 
 run-server-no-build: ## Run the server
@@ -65,7 +65,7 @@ run-server-no-build: ## Run the server
 run-app: build-app ## Run the web application
 	cd app; yarn start
 
-run: ## Run the server and web application in the same session
+run: build-server ## Run the server and web application in the same session
 	$(MAKE) -j 2 run-server-no-build dev-app
 
 repl-client: build-client ## Start a REPL with in the client installed
