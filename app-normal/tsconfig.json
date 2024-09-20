@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "module": "es6",
+    "moduleResolution": "Bundler",
+    "target": "es5",
+    "jsx": "react-jsx",
+    "allowJs": true
+  },
+  // "paths": {
+  //   "@/*": ["./src/*"]
+  // },
+  "include": ["./src/index.tsx"]
+}

@@ -1,0 +1,5 @@
+rm -rf ../out && echo "erased out directory"
+mkdir ../out && echo "created out directory"
+cp -r ./dist/. ../out/ && echo "exported dist directory contents to out directory"
+cp ./src/server.js ../out/server.js && echo "exported server.js to out directory"
+echo "export completed. navigate to ../out directory and run 'node server.js'"

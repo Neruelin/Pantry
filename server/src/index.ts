@@ -74,11 +74,18 @@ function main() {
     // Convert NodeJS's http request to an HttpRequest.
     const httpRequest = convertRequest(req);
 
+    if (httpRequest.method == "OPTIONS") {
+      res.writeHead(200, {"access-control-allow-origin": "*", "Access-Control-Allow-Headers": req.headers["access-control-request-headers"]});
+      res.end();
+      return;
+    }
+
     // Call the service handler, which will route the request to the GreetingService
     // implementation and then serialize the response to an HttpResponse.
     const httpResponse = await serviceHandler.handle(httpRequest, ctx.context);
-
+    
     // Write the HttpResponse to NodeJS http's response expected format.
+    res.setHeader("Access-Control-Allow-Origin", "*");
     return writeResponse(httpResponse, res);
   });
 
