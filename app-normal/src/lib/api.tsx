@@ -6,12 +6,14 @@ export function getClient(): Pantry {
     return client || (client = new Pantry({
         endpoint: {
             protocol: "http",
-            hostname: "localhost",
+            hostname: location.hostname || "localhost", 
             port: 3001,
             path: "/"
         }
     }));
 }
+
+document.
 
 export async function getPantryItems(): Promise<Map<string, number>> {
     console.log("GetPantryItems called...");
