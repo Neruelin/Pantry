@@ -13,8 +13,6 @@ export function getClient(): Pantry {
     }));
 }
 
-document.
-
 export async function getPantryItems(): Promise<Map<string, number>> {
     console.log("GetPantryItems called...");
     const data = (await getClient().getCounts()).counts || [];
