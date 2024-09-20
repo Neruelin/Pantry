@@ -90,7 +90,7 @@ function main() {
   });
 
   const port = 3001
-  server.listen(port);
+  server.listen(port, '0.0.0.0');
   console.log(`Started server on port ${port}...`);
 }
 
